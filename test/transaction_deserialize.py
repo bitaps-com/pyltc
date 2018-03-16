@@ -1,7 +1,7 @@
 import unittest
-from pybtc import blockchain
+from pyltc import blockchain
 from binascii import unhexlify
-from pybtc import address2hash160
+from pyltc import address2hash160
 
 
 class TransactionDeserializeTests(unittest.TestCase):

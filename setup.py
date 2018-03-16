@@ -3,11 +3,11 @@
 # todo install libsec256 part
 from distutils.core import setup
 
-setup(name='pybtc',
+setup(name='pyltc',
       version='1.0.1',
-      description='Bitcoin library',
+      description='Litecoin library',
       author='Alexsei Karpov',
       author_email='admin@bitaps.com',
-      url='https://github.com/bitaps-com/pybtc',
-      packages=['pybtc', ],
+      url='https://github.com/bitaps-com/pyltc',
+      packages=['pyltc', ],
      )

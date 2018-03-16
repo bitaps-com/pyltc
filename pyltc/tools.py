@@ -22,9 +22,7 @@ FLAG_VERIFY = secp256k1.SECP256K1_CONTEXT_VERIFY
 ALL_FLAGS = FLAG_SIGN | FLAG_VERIFY
 NO_FLAGS = secp256k1.SECP256K1_CONTEXT_NONE
 
-HAS_RECOVERABLE = hasattr(secp256k1, 'secp256k1_ecdsa_sign_recoverable')
-HAS_SCHNORR = hasattr(secp256k1, 'secp256k1_schnorr_sign')
-HAS_ECDH = hasattr(secp256k1, 'secp256k1_ecdh')
+
 
 ECDSA_CONTEXT_SIGN = secp256k1.secp256k1_context_create(FLAG_SIGN)
 ECDSA_CONTEXT_VERIFY = secp256k1.secp256k1_context_create(FLAG_VERIFY)
@@ -114,7 +112,7 @@ def hash160(bytes):
 
 
 #
-# Bitcoin keys/ addresses
+# Litecoin keys/ addresses
 #
 def create_priv():
     """
@@ -140,7 +138,7 @@ def priv_from_int(k):
 def priv2WIF(h, compressed = False, testnet = False):
     #uncompressed: 0x80 + [32-byte secret] + [4 bytes of Hash() of previous 33 bytes], base58 encoded
     #compressed: 0x80 + [32-byte secret] + 0x01 + [4 bytes of Hash() previous 34 bytes], base58 encoded
-    prefix = b'\x80'
+    prefix = b'\xb0'
     if testnet:
         prefix = b'\xef'
     h = prefix + h
@@ -153,7 +151,7 @@ def WIF2priv(h):
     return h[1:33]
 
 def is_WIF_valid(wif):
-    if wif[0] not in ['5', 'K', 'L', '9', 'c']:
+    if wif[0] not in ['6', 'T', 'T', 'c']:
         return False
     h = decode_base58(wif)
     if len(h) != 37:  return False
@@ -196,13 +194,15 @@ def is_valid_pub(key):
 
 
 #
-# Bitcoin addresses
+# Litecoin addresses
 #
-def hash1602address(hash160, testnet = False, p2sh = False):
+def hash1602address(hash160, testnet = False, p2sh = False, legacyp2sh = False):
     if type(hash160) == str:
         hash160 = unhexlify(hash160)
     if not p2sh:
-        prefix = b'\x6f' if testnet else b'\x00'
+        prefix = b'\x6f' if testnet else b'\x30'
+    elif not legacyp2sh:
+        prefix = b'\x58' if testnet else b'\x32'
     else:
         prefix = b'\xc4' if testnet else b'\x05'
     hash160 = prefix + hash160
@@ -213,24 +213,24 @@ def address2hash160(address):
     return decode_base58(address)[1:-4]
 
 def address_type(address):
-    if address[0] in ('2', '3'):
+    if address[0] in ('c', 'M', '3', '2'):
         return 'P2SH'
-    if address[0] in ('1', 'm', 'n'):
+    if address[0] in ('L', 'm', 'n'):
         return 'P2PKH'
     return 'UNKNOWN'
 
 def address2script(address):
-    if address[0] in ('2', '3'):
+    if address[0] in ('c', 'M'):
         return OPCODE["OP_HASH160"] + b'\x14' + address2hash160(address) + OPCODE["OP_EQUAL"]
-    if address[0] in ('1', 'm', 'n'):
+    if address[0] in ('L', 'm', 'n'):
         return OPCODE["OP_DUP"] + OPCODE["OP_HASH160"] + b'\x14' + \
                address2hash160(address) + OPCODE["OP_EQUALVERIFY"] + OPCODE["OP_CHECKSIG"]
     raise Exception("Unknown address")
 
 
-def pub2address(pubkey, testnet = False, p2sh = False):
+def pub2address(pubkey, testnet = False, p2sh = False, legacyp2sh = False):
     h = hash160(pubkey)
-    return hash1602address(h, testnet = testnet, p2sh = p2sh)
+    return hash1602address(h, testnet = testnet, p2sh = p2sh, legacyp2sh = legacyp2sh)
 
 def pub2segwit(pubkey, testnet = False):
     return hash1602address(pub2hash160segwit(pubkey),
@@ -243,10 +243,10 @@ def pub2hash160segwit(pubkey):
 
 def is_address_valid(addr, testnet = False):
     if testnet:
-        if addr[0] not in ('m', 'n', '2'):
+        if addr[0] not in ('m', 'n', 'c', '2'):
             return False
     else:
-        if addr[0] not in ('1','3'):
+        if addr[0] not in ('L','M', '3'):
             return False
     h = decode_base58(addr)
     if len(h) != 25:  return False

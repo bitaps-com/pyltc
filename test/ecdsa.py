@@ -1,5 +1,5 @@
 import unittest
-from pybtc import *
+from pyltc import *
 
 class ECDSATests(unittest.TestCase):
     @classmethod

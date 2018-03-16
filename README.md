@@ -1,2 +1,2 @@
-# pybtc
-Python bitcoin library
+# pyltc
+Python litecoin library

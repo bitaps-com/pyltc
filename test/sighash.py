@@ -1,7 +1,7 @@
 import unittest
-from pybtc import *
+from pyltc import *
 from binascii import unhexlify
-from pybtc import address2hash160
+from pyltc import address2hash160
 
 class SighashTests(unittest.TestCase):
     @classmethod
