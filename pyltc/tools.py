@@ -202,7 +202,7 @@ def hash1602address(hash160, testnet = False, p2sh = False, legacyp2sh = False):
     if not p2sh:
         prefix = b'\x6f' if testnet else b'\x30'
     elif not legacyp2sh:
-        prefix = b'\x58' if testnet else b'\x32'
+        prefix = b'\x3a' if testnet else b'\x32'
     else:
         prefix = b'\xc4' if testnet else b'\x05'
     hash160 = prefix + hash160
@@ -213,14 +213,14 @@ def address2hash160(address):
     return decode_base58(address)[1:-4]
 
 def address_type(address):
-    if address[0] in ('c', 'M', '3', '2'):
+    if address[0] in ('Q', 'M', '3', '2'):
         return 'P2SH'
     if address[0] in ('L', 'm', 'n'):
         return 'P2PKH'
     return 'UNKNOWN'
 
 def address2script(address):
-    if address[0] in ('c', 'M'):
+    if address[0] in ('Q', 'M', '2'):
         return OPCODE["OP_HASH160"] + b'\x14' + address2hash160(address) + OPCODE["OP_EQUAL"]
     if address[0] in ('L', 'm', 'n'):
         return OPCODE["OP_DUP"] + OPCODE["OP_HASH160"] + b'\x14' + \
