@@ -232,10 +232,11 @@ def pub2address(pubkey, testnet = False, p2sh = False, legacyp2sh = False):
     h = hash160(pubkey)
     return hash1602address(h, testnet = testnet, p2sh = p2sh, legacyp2sh = legacyp2sh)
 
-def pub2segwit(pubkey, testnet = False):
+def pub2segwit(pubkey, testnet = False, legacyp2sh = False):
     return hash1602address(pub2hash160segwit(pubkey),
                            testnet=testnet,
-                           p2sh=True)
+                           p2sh=True,
+                           legacyp2sh=legacyp2sh)
 
 def pub2hash160segwit(pubkey):
     return hash160(b'\x00\x14' + hash160(pubkey))
