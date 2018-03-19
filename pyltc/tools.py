@@ -244,7 +244,7 @@ def pub2hash160segwit(pubkey):
 
 def is_address_valid(addr, testnet = False):
     if testnet:
-        if addr[0] not in ('m', 'n', 'c', '2'):
+        if addr[0] not in ('m', 'n', 'Q', '2'):
             return False
     else:
         if addr[0] not in ('L','M', '3'):
