@@ -15,7 +15,7 @@ from .key import *
 from .hash import *
 
 
-def hash_to_address(address_hash, testnet=False, script_hash=False, witness_version=0):
+def hash_to_address(address_hash, testnet=False, script_hash=False, witness_version=0, legacy=False):
     """
     Get address from public key/script hash. In case PUBKEY, P2PKH, P2PKH public key/script hash is SHA256+RIPEMD160,
     P2WSH script hash is SHA256.
@@ -50,10 +50,15 @@ def hash_to_address(address_hash, testnet=False, script_hash=False, witness_vers
 
     if witness_version is None:
         if testnet:
-            prefix = TESTNET_SCRIPT_ADDRESS_BYTE_PREFIX
+            if not legacy:
+                prefix = TESTNET_SCRIPT_ADDRESS_BYTE_PREFIX
+            else:
+                prefix = TESTNET_SCRIPT_ADDRESS_LEGACY_BYTE_PREFIX
         else:
-            prefix = MAINNET_SCRIPT_ADDRESS_BYTE_PREFIX
-            print(prefix)
+            if not legacy:
+                prefix = MAINNET_SCRIPT_ADDRESS_BYTE_PREFIX
+            else:
+                prefix = MAINNET_SCRIPT_ADDRESS_LEGACY_BYTE_PREFIX
         address_hash = prefix + address_hash
         address_hash += double_sha256(address_hash)[:4]
         return encode_base58(address_hash)
@@ -113,8 +118,8 @@ def address_to_hash(address, hex=True):
     """
     if address[0] in ADDRESS_PREFIX_LIST:
         h = decode_base58(address)[1:-4]
-    elif address[:3] in (MAINNET_SEGWIT_ADDRESS_PREFIX,
-                         TESTNET_SEGWIT_ADDRESS_PREFIX):
+    elif address.split("1")[0] in (MAINNET_SEGWIT_ADDRESS_PREFIX,
+                                   TESTNET_SEGWIT_ADDRESS_PREFIX):
         address = address.split("1")[1]
         h = rebase_5_to_8(rebase_32_to_5(address)[1:-6], False)
     else:
@@ -131,17 +136,19 @@ def address_type(address, num=False):
     :return: address type in string or numeric format. 
     """
     if address[0] in (TESTNET_SCRIPT_ADDRESS_PREFIX,
-                      MAINNET_SCRIPT_ADDRESS_PREFIX):
+                      TESTNET_SCRIPT_ADDRESS_LEGACY_PREFIX,
+                      MAINNET_SCRIPT_ADDRESS_PREFIX,
+                      MAINNET_SCRIPT_ADDRESS_LEGACY_PREFIX):
         t = 'P2SH'
     elif address[0] in (MAINNET_ADDRESS_PREFIX,
                         TESTNET_ADDRESS_PREFIX,
                         TESTNET_ADDRESS_PREFIX_2):
         t = 'P2PKH'
-    elif address[:2] in (MAINNET_SEGWIT_ADDRESS_PREFIX,
-                         TESTNET_SEGWIT_ADDRESS_PREFIX):
-        if len(address) == 42:
+    elif address.split('1')[0] in (MAINNET_SEGWIT_ADDRESS_PREFIX,
+                                   TESTNET_SEGWIT_ADDRESS_PREFIX):
+        if len(address) in (43, 44):
             t = 'P2WPKH'
-        elif len(address) == 62:
+        elif len(address) in (64, 63):
             t = 'P2WSH'
         else:
             return SCRIPT_TYPES['NON_STANDARD'] if num else 'UNKNOWN'
@@ -158,15 +165,17 @@ def address_net_type(address):
     :return: address network type in string format or None. 
     """
     if address[0] in (MAINNET_SCRIPT_ADDRESS_PREFIX,
+                      MAINNET_SCRIPT_ADDRESS_LEGACY_PREFIX,
                       MAINNET_ADDRESS_PREFIX):
         return "mainnet"
-    elif address[:2] == MAINNET_SEGWIT_ADDRESS_PREFIX:
+    elif address[:3] == MAINNET_SEGWIT_ADDRESS_PREFIX:
         return "mainnet"
     elif address[0] in (TESTNET_SCRIPT_ADDRESS_PREFIX,
+                        TESTNET_SCRIPT_ADDRESS_LEGACY_PREFIX,
                         TESTNET_ADDRESS_PREFIX,
                         TESTNET_ADDRESS_PREFIX_2):
         return "testnet"
-    elif address[:2] == TESTNET_SEGWIT_ADDRESS_PREFIX:
+    elif address[:4] == TESTNET_SEGWIT_ADDRESS_PREFIX:
         return "testnet"
     return None
 
@@ -180,7 +189,9 @@ def address_to_script(address, hex=False):
     :return: public key script in HEX or bytes string.
     """
     if address[0] in (TESTNET_SCRIPT_ADDRESS_PREFIX,
-                      MAINNET_SCRIPT_ADDRESS_PREFIX):
+                      TESTNET_SCRIPT_ADDRESS_LEGACY_PREFIX,
+                      MAINNET_SCRIPT_ADDRESS_PREFIX,
+                      MAINNET_SCRIPT_ADDRESS_LEGACY_PREFIX):
         s = [OP_HASH160,
              b'\x14',
              address_to_hash(address, hex=False),
@@ -194,7 +205,7 @@ def address_to_script(address, hex=False):
              address_to_hash(address, hex=False),
              OP_EQUALVERIFY,
              OP_CHECKSIG]
-    elif address[:2] in (TESTNET_SEGWIT_ADDRESS_PREFIX,
+    elif address.split('1')[0] in (TESTNET_SEGWIT_ADDRESS_PREFIX,
                          MAINNET_SEGWIT_ADDRESS_PREFIX):
         h = address_to_hash(address, hex=False)
         s = [OP_0,
@@ -224,17 +235,21 @@ def is_address_valid(address, testnet=False):
         return False
     if address[0] in (MAINNET_ADDRESS_PREFIX,
                       MAINNET_SCRIPT_ADDRESS_PREFIX,
+                      MAINNET_SCRIPT_ADDRESS_LEGACY_PREFIX,
                       TESTNET_ADDRESS_PREFIX,
                       TESTNET_ADDRESS_PREFIX_2,
-                      TESTNET_SCRIPT_ADDRESS_PREFIX):
+                      TESTNET_SCRIPT_ADDRESS_PREFIX,
+                      TESTNET_SCRIPT_ADDRESS_LEGACY_PREFIX):
         if testnet:
             if address[0] not in (TESTNET_ADDRESS_PREFIX,
                                   TESTNET_ADDRESS_PREFIX_2,
-                                  TESTNET_SCRIPT_ADDRESS_PREFIX):
+                                  TESTNET_SCRIPT_ADDRESS_PREFIX,
+                                  TESTNET_SCRIPT_ADDRESS_LEGACY_PREFIX):
                 return False
         else:
             if address[0] not in (MAINNET_ADDRESS_PREFIX,
-                                  MAINNET_SCRIPT_ADDRESS_PREFIX):
+                                  MAINNET_SCRIPT_ADDRESS_PREFIX,
+                                  MAINNET_SCRIPT_ADDRESS_LEGACY_PREFIX):
                 return False
         h = decode_base58(address)
         if len(h) != 25:
@@ -243,9 +258,9 @@ def is_address_valid(address, testnet=False):
         if double_sha256(h[:-4])[:4] != checksum:
             return False
         return True
-    elif address[:2].lower() in (TESTNET_SEGWIT_ADDRESS_PREFIX,
-                                 MAINNET_SEGWIT_ADDRESS_PREFIX):
-        if len(address) not in (42, 62):
+    elif address.split('1')[0].lower() in (TESTNET_SEGWIT_ADDRESS_PREFIX,
+                                           MAINNET_SEGWIT_ADDRESS_PREFIX):
+        if len(address) not in (43,44, 63, 64):
             return False
         try:
             prefix, payload = address.split('1')
@@ -277,6 +292,7 @@ def is_address_valid(address, testnet=False):
         if checksum != checksum2:
             return False
         return True
+    return False
 
 
 def get_witness_version(address):
