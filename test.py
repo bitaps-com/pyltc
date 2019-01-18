@@ -1,8 +1,10 @@
+
 import unittest
-import test
+
+import pyltc.test
 
 testLoad = unittest.TestLoader()
-suites = testLoad.loadTestsFromModule(test)
+suites = testLoad.loadTestsFromModule(pyltc.test)
 
-runner = unittest.TextTestRunner(verbosity=2)
+runner = unittest.TextTestRunner(verbosity=1)
 runner.run(suites)
