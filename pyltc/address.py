@@ -143,7 +143,8 @@ class Address():
     already contain in initial key parameter and will be ignored.
     """
     def __init__(self, key=None,
-                 address_type="P2WPKH", testnet=False, compressed=True):
+                 address_type="P2WPKH", testnet=False, compressed=True, legacy=False):
+        self.legacy = legacy
         if key is None:
             #: instance of ``PrivateKey`` class
             self.private_key = PrivateKey(testnet=testnet,
@@ -196,7 +197,8 @@ class Address():
         self.address = hash_to_address(self.hash,
                                        script_hash=self.script_hash,
                                        witness_version=self.witness_version,
-                                       testnet=self.testnet)
+                                       testnet=self.testnet,
+                                       legacy=self.legacy)
 
     def __str__(self):
         return self.address
@@ -204,7 +206,8 @@ class Address():
 
 class ScriptAddress():
     def __init__(self, script,
-                 testnet=False, witness_version=0):
+                 testnet=False, witness_version=0, legacy=False):
+        self.legacy = legacy
         self.witness_version = witness_version
         self.testnet = testnet
         if isinstance(script, str):
@@ -220,11 +223,12 @@ class ScriptAddress():
         self.address = hash_to_address(self.hash,
                                        script_hash=True,
                                        witness_version=self.witness_version,
-                                       testnet=self.testnet)
+                                       testnet=self.testnet,
+                                       legacy=self.legacy)
 
     @classmethod
     def multisig(cls, n, m, public_key_list,
-                 testnet=False, witness_version=0):
+                 testnet=False, witness_version=0, legacy=False):
         """
         The class method for creating a multisig address.
 
@@ -267,4 +271,4 @@ class ScriptAddress():
                 raise TypeError("invalid public key list element size")
             script += int_to_var_int(len(a)) + a
         script += bytes([0x50 + m]) + OP_CHECKMULTISIG
-        return cls(script, testnet=testnet, witness_version=witness_version)
+        return cls(script, testnet=testnet, witness_version=witness_version, legacy=legacy)
