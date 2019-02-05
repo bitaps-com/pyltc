@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(name='pyltc',
       version='2.0.0',
-      description='Python Bitcoin library',
+      description='Python Litecoin library',
       keywords='bitcoin',
       url='https://github.com/bitaps-com/pyltc',
       author='Alexsei Karpov',
