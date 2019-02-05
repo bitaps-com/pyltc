@@ -1,13 +1,22 @@
 #!/usr/bin/python3
 # coding: utf-8
-# todo install libsec256 part
-from distutils.core import setup
+
+from setuptools import setup, find_packages
+
 
 setup(name='pyltc',
-      version='1.0.1',
-      description='Litecoin library',
+      version='2.0.0',
+      description='Python Litecoin library',
+      keywords='bitcoin',
+      url='https://github.com/bitaps-com/pyltc',
       author='Alexsei Karpov',
       author_email='admin@bitaps.com',
-      url='https://github.com/bitaps-com/pyltc',
-      packages=['pyltc', ],
-     )
+      license='GPL-3.0',
+      packages=find_packages(),
+      install_requires=[ 'secp256k1'],
+      include_package_data=True,
+      package_data={
+          'pyltc': ['bip39_word_list/*.txt', 'test/*.txt'],
+      },
+      test_suite='tests',
+      zip_safe=False)
