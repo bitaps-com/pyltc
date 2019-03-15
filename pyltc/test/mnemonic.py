@@ -30,9 +30,9 @@ class BlockDeserializeTests(unittest.TestCase):
         xpub = "xpub661MyMwAqRbcFC24Shs4npxEUmtjTXMvNyEdV1t7oV1aEKw7zCH73cN8bWyUWRUNzJ6NyVssfhZziyTUFB6" \
                "J3HQkd9xe9GGzk1rMK81JL4b"
         self.assertEqual(xprivate_to_xpublic_key(xpriv), xpub)
-        self.assertEqual(private_from_xprivate_key(xpriv), "L2VnL3zxnNE1jRSemyP7U6PvWuNLvuV5iMJdc2RJGALjZ6HYik7y")
+        self.assertEqual(private_from_xprivate_key(xpriv), "T8L3moJ9BkCcWG5XKcKygSwJTm1ezzVyXZCtTq3qq8Wu4yvbZpr8")
         self.assertEqual(public_from_xpublic_key(xpub),
-                         private_to_public_key("L2VnL3zxnNE1jRSemyP7U6PvWuNLvuV5iMJdc2RJGALjZ6HYik7y"))
+                         private_to_public_key("T8L3moJ9BkCcWG5XKcKygSwJTm1ezzVyXZCtTq3qq8Wu4yvbZpr8"))
         for i in range(100):
             e = generate_entropy()
             m = entropy_to_mnemonic(e)
