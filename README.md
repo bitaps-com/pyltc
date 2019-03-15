@@ -25,3 +25,8 @@ To install pyltc
 
 * pybtc
 
+
+### Documentation
+
+Documentation is available at https://pybtc.readthedocs.io
+
