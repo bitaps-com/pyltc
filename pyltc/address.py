@@ -1,147 +1,45 @@
-from .functions import *
+import pybtc as __parent__
+import pyltc.constants as constants
+names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
+[setattr(__parent__, name, getattr(constants, name)) for name in names]
+
+import pyltc.opcodes as opcodes
+names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
+[setattr(__parent__, name, getattr(opcodes, name)) for name in names]
 
 
-class PrivateKey():
-    """
-    The class for creating private key object.
+from pyltc.opcodes import *
 
-    :param key: (optional) private key in HEX,  bytes string or WIF format. In case no key specified
-                new random private key will be created.
-    :param compressed: (optional) if set to True private key corresponding compressed public key,
-                       by default set to True. Recommended use only compressed public key.
-    :param testnet: (optional) if set to True mean that this private key for testnet Bitcoin network.
-
-    """
-    def __init__(self, key=None, compressed=True, testnet=False):
-
-        if key is None:
-
-            #: flag for compressed type of corresponding public key (boolean)
-            self.compressed = compressed
-            #: flag for testnet network private key  (boolean)
-            self.testnet = testnet
-
-            #: private key in  bytes (bytes)
-            self.key = create_private_key(wif=False)
-            #: private key in HEX (string)
-            self.hex = self.key.hex()
-            #: private key in WIF format (string)
-            self.wif = private_key_to_wif(self.key, compressed, testnet)
-
-        else:
-            if isinstance(key, str):
-                try:
-                    key = bytes.fromhex(key)
-                except:
-                    pass
-            if isinstance(key, bytes):
-                if len(key) != 32:
-                    raise TypeError("private key invalid length")
-                self.key = key
-                self.compressed = compressed
-                self.testnet = testnet
-                self.hex = self.key.hex()
-                self.wif = private_key_to_wif(self.key, compressed, testnet)
-                return
-            if not isinstance(key, str) or not is_wif_valid(key):
-                raise TypeError("private key invalid")
-
-            self.key = wif_to_private_key(key, hex=False)
-            self.hex = self.key.hex()
-            if key[0] in (MAINNET_PRIVATE_KEY_UNCOMPRESSED_PREFIX,
-                          TESTNET_PRIVATE_KEY_UNCOMPRESSED_PREFIX):
-                self.compressed = False
-            else:
-                self.compressed = True
-            if key[0] in (TESTNET_PRIVATE_KEY_UNCOMPRESSED_PREFIX,
-                          TESTNET_PRIVATE_KEY_COMPRESSED_PREFIX):
-                self.testnet = True
-            else:
-                self.testnet = False
-            self.wif = private_key_to_wif(self.key, self.compressed, self.testnet)
-
-    def __str__(self):
-        return self.wif
+from pyltc.functions.tools import bytes_from_hex, int_to_var_int
+from pyltc.functions.script import op_push_data, decode_script
+from pyltc.functions.hash import hash160, sha256
+from pyltc.functions.address import  hash_to_address, public_key_to_p2sh_p2wpkh_script
+from pyltc.functions.key import (is_wif_valid, private_to_public_key)
 
 
-class PublicKey():
-    """
-    The class for public key object.
-
-    :param key:  one of this types allowed:
-    
-                - private key is instance of ``PrivateKey`` class
-                - private key HEX encoded string
-                - private key 32 bytes string
-                - private key in WIF format
-                - public key in HEX encoded string
-                - public key [33/65] bytes string
-                
-                In case no key specified with HEX or bytes string you have to provide flag for testnet 
-                and compressed key. WIF format and ``PrivateKey`` instance already contain this flags.
-                For HEX or bytes public key only testnet flag has the meaning, comressed flag is determined 
-                according to the length of key.
-                
-    :param compressed: (optional) if set to True private key corresponding compressed public key,
-                       by default set to True. Recommended use only compressed public key.
-    :param testnet: (optional) if set to True mean that this private key for testnet Bitcoin network.
-
-    """
-    def __init__(self, key, compressed=True, testnet=False):
-        if isinstance(key, str):
-            try:
-                key = bytes.fromhex(key)
-            except:
-                if is_wif_valid(key):
-                    key = PrivateKey(key)
-
-        if isinstance(key, bytes):
-            if len(key) == 32:
-                key = PrivateKey(key, compressed=compressed, testnet=testnet)
-            elif is_public_key_valid(key):
-                public_key = key
-                self.testnet = testnet
-                self.compressed = True if len(key) == 33 else False
-            else:
-                raise TypeError("key invalid")
-
-        if isinstance(key, PrivateKey):
-            #: flag for testnet network private key  (boolean)
-            self.testnet = key.testnet
-            #: flag for compressed type of corresponding public key (boolean)
-            self.compressed = key.compressed
-            public_key = private_to_public_key(key.key,
-                                        compressed=key.compressed,
-                                        hex=False)
-        #: public key in  bytes (bytes)
-        self.key = public_key
-        #: public key in HEX (string)
-        self.hex = self.key.hex()
-
-    def __str__(self):
-        return self.hex
+PrivateKey = __parent__.PrivateKey
+PublicKey = __parent__.PublicKey
 
 
 class Address():
     """
     The class for Address object.
-
     :param key: (optional) one of this types allowed:
-    
+
                 - private key WIF format
                 - instance of ``PrivateKey``
                 - private key HEX encoded string
                 - instance of ``PublicKey``
-                
+
                 In case no key specified new Address will be created with random keys.
     :param address_type: (optional) P2PKH, PUBKEY, P2WPKH, P2SH_P2WPKH, by default P2WPKH.
     :param compressed: (optional) if set to True private key corresponding compressed public key,
                        by default set to True. Recommended use only compressed public key.
     :param testnet: (optional) if set to True mean that this private key for testnet Bitcoin network.
-
-    In case instanse is created from WIF private key, ``PrivateKey`` or ``PublicKey`` compressed and testnet flags
+    In case instance is created from WIF private key, ``PrivateKey`` or ``PublicKey`` compressed and testnet flags
     already contain in initial key parameter and will be ignored.
     """
+
     def __init__(self, key=None,
                  address_type="P2WPKH", testnet=False, compressed=True, legacy=False):
         self.legacy = legacy
@@ -211,7 +109,7 @@ class ScriptAddress():
         self.witness_version = witness_version
         self.testnet = testnet
         if isinstance(script, str):
-            script = bytes.fromhex(script)
+            script = bytes_from_hex(script)
         self.script = script
         self.script_hex = self.script.hex()
         if witness_version is None:
@@ -231,18 +129,17 @@ class ScriptAddress():
                  testnet=False, witness_version=0, legacy=False):
         """
         The class method for creating a multisig address.
-
         :param n: count of required signatures (max 15).
         :param m: count of total addresses of participants (max 15).
         :param list address_list: addresses list, allowed types:
-                       
+
                              - bytes or HEX encoded private key
                              - private key in WIF format
                              - PrivateKey instance,
                              - bytes or HEX encoded public key
                              - PublicKey instance
-                             
-                             
+
+
         """
         if n > 15 or m > 15 or n > m or n < 1 or m < 1:
             raise TypeError("invalid n of m maximum 15 of 15 multisig allowed")
@@ -252,7 +149,7 @@ class ScriptAddress():
         for a in list(public_key_list):
             if isinstance(a, str):
                 try:
-                    a = bytes.fromhex(a)
+                    a = bytes_from_hex(a)
                 except:
                     if is_wif_valid(a):
                         a = private_to_public_key(a, hex=False)
