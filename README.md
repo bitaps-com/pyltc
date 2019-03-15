@@ -23,7 +23,7 @@ To install pyltc
     
 ### Dependencies
 
-* pybtc
+* https://github.com/bitaps-com/pybtc (latest)
 
 
 ### Documentation
