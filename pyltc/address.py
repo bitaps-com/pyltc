@@ -103,7 +103,7 @@ class Address():
                                        testnet=self.testnet,
                                        legacy=False)
 
-        if not legacy and self.witness_version:
+        if not legacy and self.witness_version is None:
             self.legacy_address = hash_to_address(self.hash,
                                            script_hash=self.script_hash,
                                            witness_version=self.witness_version,
