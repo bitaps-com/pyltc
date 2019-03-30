@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # coding: utf-8
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 
 
 setup(name='pyltc',
@@ -19,4 +19,7 @@ setup(name='pyltc',
           'pyltc': ['bip39_word_list/*.txt', 'test/*.txt'],
       },
       test_suite='tests',
+      ext_modules=[Extension("ltc_scrypt",
+                             ["pyltc/scrypt/scrypt.c", "pyltc/scrypt/scryptmodule.c"],
+                             include_dirs=["pyltc/scrypt"])],
       zip_safe=False)

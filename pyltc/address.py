@@ -97,7 +97,18 @@ class Address():
                                        witness_version=self.witness_version,
                                        testnet=self.testnet,
                                        legacy=self.legacy)
+        self.address = hash_to_address(self.hash,
+                                       script_hash=self.script_hash,
+                                       witness_version=self.witness_version,
+                                       testnet=self.testnet,
+                                       legacy=False)
 
+        if not legacy and self.witness_version is None:
+            self.legacy_address = hash_to_address(self.hash,
+                                           script_hash=self.script_hash,
+                                           witness_version=self.witness_version,
+                                           testnet=self.testnet,
+                                           legacy=True)
     def __str__(self):
         return self.address
 
