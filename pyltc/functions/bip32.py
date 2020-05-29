@@ -7,13 +7,7 @@ import pyltc.opcodes as opcodes
 names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
 [setattr(__parent__, name, getattr(opcodes, name)) for name in names]
 
-from struct import pack
-from secp256k1 import ffi, lib
-from pybtc.functions.key import private_to_public_key, private_key_to_wif
-from pybtc.functions.hash import hmac_sha512, double_sha256, hash160
-from pybtc.functions.encode import (encode_base58,
-                                    decode_base58_with_checksum,
-                                    encode_base58_with_checksum)
+
 from pybtc.constants import *
 
 
