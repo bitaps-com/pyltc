@@ -1,0 +1,1 @@
+from pybtc.opcodes import *
