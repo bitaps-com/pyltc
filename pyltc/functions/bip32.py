@@ -1,15 +1,18 @@
 import pybtc.functions.bip32 as __parent__
-import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
+from pyltc.constants import  *
+from pyltc.functions.tools import copy_function
 
-import pyltc.opcodes as opcodes
-names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(opcodes, name)) for name in names]
+GLOBALS = globals()
 
-
-from pybtc.constants import *
-
+_create_master_xprivate_key = copy_function(__parent__.create_master_xprivate_key, GLOBALS)
+_xprivate_to_xpublic_key = copy_function(__parent__.xprivate_to_xpublic_key, GLOBALS)
+_derive_xkey = copy_function(__parent__.derive_xkey, GLOBALS)
+_derive_child_xprivate_key = copy_function(__parent__.derive_child_xprivate_key, GLOBALS)
+_derive_child_xpublic_key = copy_function(__parent__.derive_child_xpublic_key, GLOBALS)
+_public_from_xpublic_key = copy_function(__parent__.public_from_xpublic_key, GLOBALS)
+_private_from_xprivate_key = copy_function(__parent__.private_from_xprivate_key, GLOBALS)
+_is_xprivate_key_valid = copy_function(__parent__.is_xprivate_key_valid, GLOBALS)
+_is_xpublic_key_valid = copy_function(__parent__.is_xpublic_key_valid, GLOBALS)
 
 def create_master_xprivate_key(seed, testnet=False, base58=True, hex=False):
     """
@@ -21,7 +24,7 @@ def create_master_xprivate_key(seed, testnet=False, base58=True, hex=False):
                         In case True base58 flag value will be ignored.
     :return: extended private key  in base58, HEX or bytes string format.
     """
-    return __parent__.create_master_xprivate_key(seed, testnet=testnet, base58=base58, hex=hex)
+    return _create_master_xprivate_key(seed, testnet=testnet, base58=base58, hex=hex)
 
 
 def xprivate_to_xpublic_key(xprivate_key, base58=True, hex=False):
@@ -34,7 +37,7 @@ def xprivate_to_xpublic_key(xprivate_key, base58=True, hex=False):
                         In case True base58 flag value will be ignored.
     :return: extended public key  in base58, HEX or bytes string format.
     """
-    return __parent__.xprivate_to_xpublic_key(xprivate_key, base58=base58, hex=hex)
+    return _xprivate_to_xpublic_key(xprivate_key, base58=base58, hex=hex)
 
 
 def derive_xkey(xkey, *path_level, base58=True, hex=False):
@@ -48,15 +51,15 @@ def derive_xkey(xkey, *path_level, base58=True, hex=False):
                         In case True base58 flag value will be ignored.
     :return: extended child private/public key  in base58, HEX or bytes string format.
     """
-    return __parent__.derive_xkey(xkey, *path_level, base58=base58, hex=hex)
+    return _derive_xkey(xkey, *path_level, base58=base58, hex=hex)
 
 
 def derive_child_xprivate_key(xprivate_key, i):
-    return __parent__.derive_child_xprivate_key(xprivate_key, i)
+    return _derive_child_xpublic_key(xprivate_key, i)
 
 
 def derive_child_xpublic_key(xpublic_key, i):
-    return __parent__.derive_child_xpublic_key(xpublic_key, i)
+    return _derive_child_xpublic_key(xpublic_key, i)
 
 
 def public_from_xpublic_key(xpublic_key, hex=True):
@@ -69,7 +72,7 @@ def public_from_xpublic_key(xpublic_key, hex=True):
                         In case True base58 flag value will be ignored.
     :return: public key  in HEX or bytes string format.
     """
-    return __parent__.public_from_xpublic_key(xpublic_key, hex=hex)
+    return _public_from_xpublic_key(xpublic_key, hex=hex)
 
 
 def private_from_xprivate_key(xprivate_key, wif=True, hex=False):
@@ -82,7 +85,7 @@ def private_from_xprivate_key(xprivate_key, wif=True, hex=False):
                         In case True WIF flag value will be ignored.
     :return: private key  in HEX or bytes string format.
     """
-    return __parent__.private_from_xprivate_key(xprivate_key, wif=wif, hex=hex)
+    return _private_from_xprivate_key(xprivate_key, wif=wif, hex=hex)
 
 
 def is_xprivate_key_valid(key):
@@ -92,7 +95,7 @@ def is_xprivate_key_valid(key):
     :param key: extended private key in BASE58, HEX or bytes string format.
     :return: boolean.
     """
-    return __parent__.is_xprivate_key_valid(key)
+    return _is_xprivate_key_valid(key)
 
 
 def is_xpublic_key_valid(key):
@@ -102,4 +105,4 @@ def is_xpublic_key_valid(key):
     :param key: extended private key in BASE58, HEX or bytes string format.
     :return: boolean.
     """
-    return __parent__.is_xpublic_key_valid(key)
+    return _is_xpublic_key_valid(key)

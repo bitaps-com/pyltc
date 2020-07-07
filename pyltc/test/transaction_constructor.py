@@ -5,14 +5,11 @@ parentPath = os.path.abspath("..")
 if parentPath not in sys.path:
     sys.path.insert(0, parentPath)
 
-from secp256k1 import ffi
-import secp256k1
 from pyltc.functions import *
-from pyltc.opcodes import *
+
 from pyltc.transaction import *
 from pyltc.address import *
-from binascii import unhexlify
-from pyltc import address_to_hash as address2hash160
+
 
 
 def decode_block_tx(block):

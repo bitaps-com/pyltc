@@ -1,27 +1,41 @@
 import pybtc.functions.address as __parent__
-import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
-
-import pyltc.opcodes as opcodes
-names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(opcodes, name)) for name in names]
-
-
-from pyltc.constants import *
+from pyltc.constants import  *
 from pyltc.opcodes import *
-from pyltc.functions.hash import double_sha256
+
+from pyltc.functions.tools import bytes_from_hex, get_bytes
+from pyltc.functions.hash import double_sha256, hash160
 from pyltc.functions.encode import (encode_base58,
-                                    decode_base58,
                                     rebase_8_to_5,
-                                    rebase_5_to_32,
-                                    rebase_32_to_5,
                                     bech32_polymod,
+                                    rebase_5_to_32,
+                                    decode_base58,
+                                    rebase_5_to_8,
+                                    rebase_32_to_5,
                                     base32charset,
                                     base32charset_upcase)
 
 
+from pyltc.functions.tools import copy_function
 
+GLOBALS = globals()
+
+_address_to_hash = copy_function(__parent__.address_to_hash, GLOBALS)
+_public_key_to_address = copy_function(__parent__.public_key_to_address, GLOBALS)
+_get_witness_version = copy_function(__parent__.get_witness_version, GLOBALS)
+
+
+def public_key_to_address(pubkey, testnet=False, p2sh_p2wpkh=False, witness_version=0):
+    """
+    Get address from public key/script hash. In case PUBKEY, P2PKH, P2PKH public key/script hash is SHA256+RIPEMD160,
+    P2WSH script hash is SHA256.
+    :param pubkey: public key HEX or bytes string format.
+    :param testnet: (optional) flag for testnet network, by default is False.
+    :param p2sh_p2wpkh: (optional) flag for P2WPKH inside P2SH address, by default is False.
+    :param witness_version: (optional) witness program version, by default is 0, for legacy
+                            address format use None.
+    :return: address in base58 or bech32 format.
+    """
+    return _public_key_to_address(pubkey, testnet=testnet, p2sh_p2wpkh=p2sh_p2wpkh, witness_version=witness_version)
 
 
 def hash_to_address(address_hash, testnet=False, script_hash=False, witness_version=0, legacy=False):
@@ -83,19 +97,6 @@ def hash_to_address(address_hash, testnet=False, script_hash=False, witness_vers
     checksum = rebase_8_to_5(checksum.to_bytes(5, "big"))[2:]
     return "%s1%s" % (hrp, rebase_5_to_32(address_hash + checksum).decode())
 
-def public_key_to_address(pubkey, testnet=False, p2sh_p2wpkh=False, witness_version=0):
-    """
-    Get address from public key/script hash. In case PUBKEY, P2PKH, P2PKH public key/script hash is SHA256+RIPEMD160,
-    P2WSH script hash is SHA256.
-    :param pubkey: public key HEX or bytes string format.
-    :param testnet: (optional) flag for testnet network, by default is False.
-    :param p2sh_p2wpkh: (optional) flag for P2WPKH inside P2SH address, by default is False.
-    :param witness_version: (optional) witness program version, by default is 0, for legacy
-                            address format use None.
-    :return: address in base58 or bech32 format.
-    """
-    return __parent__.public_key_to_address(pubkey, testnet=testnet,
-                                        p2sh_p2wpkh=p2sh_p2wpkh, witness_version=witness_version)
 
 def address_to_hash(address, hex=True):
     """
@@ -104,7 +105,17 @@ def address_to_hash(address, hex=True):
     :param hex:  (optional) If set to True return key in HEX format, by default is True.
     :return: script in HEX or bytes string.
     """
-    return __parent__.address_to_hash(address, hex=hex)
+    return _address_to_hash(address, hex=hex)
+
+def hash_to_script(address_hash, script_type, hex=False):
+    """
+    Get public key script from hash.
+
+    :param address: h in base58 or bech32 format.
+    :param hex:  (optional) If set to True return key in HEX format, by default is True.
+    :return: public key script in HEX or bytes string.
+    """
+    return __parent__.hash_to_script(address_hash, script_type, hex=hex)
 
 
 def address_type(address, num=False):
@@ -135,6 +146,7 @@ def address_type(address, num=False):
         return SCRIPT_TYPES['NON_STANDARD'] if num else 'UNKNOWN'
     return SCRIPT_TYPES[t] if num else t
 
+
 def address_net_type(address):
     """
     Get address network type.
@@ -156,6 +168,7 @@ def address_net_type(address):
         return "testnet"
     return None
 
+
 def address_to_script(address, hex=False):
     """
     Get public key script from address.
@@ -167,10 +180,7 @@ def address_to_script(address, hex=False):
                       TESTNET_SCRIPT_ADDRESS_LEGACY_PREFIX,
                       MAINNET_SCRIPT_ADDRESS_PREFIX,
                       MAINNET_SCRIPT_ADDRESS_LEGACY_PREFIX):
-        s = [OP_HASH160,
-             b'\x14',
-             address_to_hash(address, hex=False),
-             OP_EQUAL]
+        s = [OP_HASH160, b'\x14', address_to_hash(address, hex=False), OP_EQUAL]
     elif address[0] in (MAINNET_ADDRESS_PREFIX,
                         TESTNET_ADDRESS_PREFIX,
                         TESTNET_ADDRESS_PREFIX_2):
@@ -183,9 +193,7 @@ def address_to_script(address, hex=False):
     elif address.split('1')[0] in (TESTNET_SEGWIT_ADDRESS_PREFIX,
                          MAINNET_SEGWIT_ADDRESS_PREFIX):
         h = address_to_hash(address, hex=False)
-        s = [OP_0,
-             bytes([len(h)]),
-             h]
+        s = [OP_0, bytes([len(h)]), h]
     else:
         raise ValueError("address invalid")
     s = b''.join(s)
@@ -194,7 +202,6 @@ def address_to_script(address, hex=False):
 
 def public_key_to_p2sh_p2wpkh_script(pubkey):
     return __parent__.public_key_to_p2sh_p2wpkh_script(pubkey)
-
 
 
 def is_address_valid(address, testnet=False):
@@ -269,4 +276,4 @@ def is_address_valid(address, testnet=False):
 
 
 def get_witness_version(address):
-    return __parent__.get_witness_version(address)
+    return _get_witness_version(address)

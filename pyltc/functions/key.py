@@ -1,10 +1,24 @@
 import pybtc.functions.key as __parent__
-import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
+from pyltc.functions.encode import encode_base58, decode_base58
+from pyltc.functions.hash import double_sha256
+from pyltc.functions.bip39_mnemonic import generate_entropy
+bytes_from_hex = bytes.fromhex
+from pybtc.crypto import __secp256k1_ec_pubkey_create__
+from pyltc.constants import  *
+
+from pyltc.functions.tools import copy_function
+
+GLOBALS = globals()
+
+_private_key_to_wif = copy_function(__parent__.private_key_to_wif, GLOBALS)
+_create_private_key = copy_function(__parent__.create_private_key, GLOBALS)
+_wif_to_private_key = copy_function(__parent__.wif_to_private_key, GLOBALS)
+_is_wif_valid = copy_function(__parent__.is_wif_valid, GLOBALS)
+_private_to_public_key = copy_function(__parent__.private_to_public_key, GLOBALS)
+_is_public_key_valid = copy_function(__parent__.is_public_key_valid, GLOBALS)
 
 
-def create_private_key(compressed=True, testnet=False, wif=True, hex=False):
+def create_private_key(compressed=True, testnet=False, wif=None, hex=None):
     """
     Create private key
 
@@ -18,8 +32,7 @@ def create_private_key(compressed=True, testnet=False, wif=True, hex=False):
              raw bytes string in case wif and hex flags set to False.
 
     """
-    return __parent__.create_private_key(compressed=compressed, testnet=testnet, wif=wif, hex=hex)
-
+    return _create_private_key(compressed=compressed, testnet=testnet, wif=wif, hex=hex)
 
 
 def private_key_to_wif(h, compressed=True, testnet=False):
@@ -33,7 +46,7 @@ def private_key_to_wif(h, compressed=True, testnet=False):
     """
     # uncompressed: 0x80 + [32-byte secret] + [4 bytes of Hash() of previous 33 bytes], base58 encoded.
     # compressed: 0x80 + [32-byte secret] + 0x01 + [4 bytes of Hash() previous 34 bytes], base58 encoded.
-    return __parent__.private_key_to_wif(h, compressed=compressed, testnet=testnet)
+    return _private_key_to_wif(h, compressed=compressed, testnet=testnet)
 
 
 def wif_to_private_key(h, hex=True):
@@ -43,7 +56,7 @@ def wif_to_private_key(h, hex=True):
     :param hex:  (optional) if set to True return key in HEX format, by default is True.
     :return: Private key HEX encoded string or raw bytes string.
     """
-    return __parent__.wif_to_private_key(h, hex=hex)
+    return _wif_to_private_key(h, hex=hex)
 
 
 def is_wif_valid(wif):
@@ -53,7 +66,7 @@ def is_wif_valid(wif):
     :param wif: private key in WIF format string.
     :return: boolean.
     """
-    return __parent__.is_wif_valid(wif)
+    return _is_wif_valid(wif)
 
 
 def private_to_public_key(private_key, compressed=True, hex=True):
@@ -67,7 +80,7 @@ def private_to_public_key(private_key, compressed=True, hex=True):
     :param hex:  (optional) if set to True return key in HEX format, by default is True.
     :return: 33/65 bytes public key in HEX or bytes string.
     """
-    return __parent__.private_to_public_key(private_key, compressed=compressed, hex=hex)
+    return _private_to_public_key(private_key, compressed=compressed, hex=hex)
 
 
 def is_public_key_valid(key):
@@ -77,6 +90,6 @@ def is_public_key_valid(key):
     :param key: public key in HEX or bytes string format.
     :return: boolean.
     """
-    return __parent__.is_public_key_valid(key)
+    return _is_public_key_valid(key)
 
 

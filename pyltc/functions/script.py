@@ -1,10 +1,5 @@
 import pybtc.functions.script as __parent__
-import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
-import pyltc.opcodes as opcodes
-names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(opcodes, name)) for name in names]
+from pyltc.constants import  *
 
 from pyltc.functions.address import hash_to_address
 
