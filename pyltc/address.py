@@ -1,11 +1,6 @@
-import pybtc as __parent__
 import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
 
 import pyltc.opcodes as opcodes
-names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(opcodes, name)) for name in names]
 
 
 from pyltc.opcodes import *
@@ -15,6 +10,14 @@ from pyltc.functions.script import op_push_data, decode_script
 from pyltc.functions.hash import hash160, sha256
 from pyltc.functions.address import  hash_to_address, public_key_to_p2sh_p2wpkh_script
 from pyltc.functions.key import (is_wif_valid, private_to_public_key)
+
+
+from pyltc._isolation import specialize as _specialize
+import pyltc.functions.key as _ltc_key
+import pyltc.functions.address as _ltc_address
+
+__parent__ = _specialize("pybtc.classes.address", __name__,
+                         constants, opcodes, _ltc_key, _ltc_address)
 
 
 PrivateKey = __parent__.PrivateKey

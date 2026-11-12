@@ -1,22 +1,22 @@
-import pybtc as __parent__
 import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
 
 import pyltc.opcodes as opcodes
-names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(opcodes, name)) for name in names]
 
 from pyltc.functions.tools import  rh2s
 from pyltc.functions.script import decode_script
 from pyltc.functions.address import  hash_to_address, address_net_type, address_to_script
-from .address import  Address, ScriptAddress
+from .address import Address, ScriptAddress, PrivateKey, PublicKey
 
-setattr(__parent__.transaction, "address_net_type", address_net_type)
-setattr(__parent__.transaction, "address_to_script", address_to_script)
-setattr(__parent__.transaction, "address_to_script", address_to_script)
-setattr(__parent__.transaction, "Address", Address)
-setattr(__parent__.transaction, "ScriptAddress", ScriptAddress)
+
+from pyltc._isolation import specialize as _specialize
+import pyltc.functions as _ltc_functions
+
+__parent__ = _specialize(
+    "pybtc.classes.transaction", __name__, constants, opcodes, _ltc_functions,
+    {"Address": Address, "ScriptAddress": ScriptAddress,
+     "PrivateKey": PrivateKey, "PublicKey": PublicKey},
+)
+
 
 class Transaction(__parent__.Transaction):
     def decode1(self, testnet=None, legacy=False):

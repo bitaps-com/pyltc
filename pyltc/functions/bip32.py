@@ -1,15 +1,15 @@
-import pybtc.functions.bip32 as __parent__
 import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
 
 import pyltc.opcodes as opcodes
-names = getattr(opcodes, '__all__', [n for n in dir(opcodes) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(opcodes, name)) for name in names]
 
 
 from pybtc.constants import *
 
+
+from pyltc._isolation import specialize as _specialize
+import pyltc.functions.key as _ltc_key
+import pyltc.functions.address as _ltc_address
+__parent__ = _specialize("pybtc.functions.bip32", __name__, constants, opcodes, _ltc_key, _ltc_address)
 
 def create_master_xprivate_key(seed, testnet=False, base58=True, hex=False):
     """

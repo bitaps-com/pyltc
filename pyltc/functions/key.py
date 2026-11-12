@@ -1,8 +1,8 @@
-import pybtc.functions.key as __parent__
 import pyltc.constants as constants
-names = getattr(constants, '__all__', [n for n in dir(constants) if not n.startswith('_')])
-[setattr(__parent__, name, getattr(constants, name)) for name in names]
 
+
+from pyltc._isolation import specialize as _specialize
+__parent__ = _specialize("pybtc.functions.key", __name__, constants)
 
 def create_private_key(compressed=True, testnet=False, wif=True, hex=False):
     """
